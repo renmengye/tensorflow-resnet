@@ -2,23 +2,24 @@ import os
 os.environ["GLOG_minloglevel"] = "2"
 import sys
 import re
-import caffe
+# import caffe
 import numpy as np
 import tensorflow as tf
 import skimage.io
-from caffe.proto import caffe_pb2
+# from caffe.proto import caffe_pb2
 from synset import *
 
 import resnet
 
 
 class CaffeParamProvider():
+
     def __init__(self, caffe_net):
         self.caffe_net = caffe_net
 
     def conv_kernel(self, name):
         k = self.caffe_net.params[name][0].data
-        # caffe      [out_channels, in_channels, filter_height, filter_width] 
+        # caffe      [out_channels, in_channels, filter_height, filter_width]
         #             0             1            2              3
         # tensorflow [filter_height, filter_width, in_channels, out_channels]
         #             2              3             1            0
@@ -63,7 +64,7 @@ def assert_almost_equal(caffe_tensor, tf_tensor):
     t = tf_tensor[0]
     c = caffe_tensor[0].transpose((1, 2, 0))
 
-    #for i in range(0, t.shape[-1]):
+    # for i in range(0, t.shape[-1]):
     #    print "tf", i,  t[:,i]
     #    print "caffe", i,  c[:,i]
 
@@ -121,15 +122,17 @@ def load_caffe(img_p, layers=50):
 
 # returns the top1 string
 def print_prob(prob):
-    #print prob
+    # print prob
     pred = np.argsort(prob)[::-1]
 
     # Get top1 label
     top1 = synset[pred[0]]
-    print "Top1: ", top1
+    print "Top1: ", top1, prob[pred[0]]
     # Get top5 label
     top5 = [synset[pred[i]] for i in range(5)]
-    print "Top5: ", top5
+    print "Top 5:"
+    for ii, tt in enumerate(top5):
+        print tt, prob[pred[ii]]
     return top1
 
 
@@ -174,7 +177,8 @@ def parse_tf_varnames(p, tf_varname, num_layers):
         block_str = letter(block_num)
     elif scale_num == 3 or scale_num == 4:
         # scale 3 uses block letters for l=50 and numbered blocks for l=101, l=151
-        # scale 4 uses block letters for l=50 and numbered blocks for l=101, l=151
+        # scale 4 uses block letters for l=50 and numbered blocks for l=101,
+        # l=151
         if num_layers == 50:
             block_str = letter(block_num)
         else:
@@ -197,7 +201,7 @@ def parse_tf_varnames(p, tf_varname, num_layers):
         conv_letter = branch.lower()
 
     x = (scale_num, block_str, branch_num, conv_letter)
-    #print x
+    # print x
 
     if 'weights' in tf_varname:
         return p.conv_kernel('res%d%s_branch%d%s' % x)
@@ -228,7 +232,7 @@ def meta_fn(layers):
 def convert(graph, img, img_p, layers):
     caffe_model = load_caffe(img_p, layers)
 
-    #for i, n in enumerate(caffe_model.params):
+    # for i, n in enumerate(caffe_model.params):
     #    print n
 
     param_provider = CaffeParamProvider(caffe_model)
@@ -262,14 +266,14 @@ def convert(graph, img, img_p, layers):
 
     assigns = []
     for var in vars_to_restore:
-        #print var.op.name
+        # print var.op.name
         data = parse_tf_varnames(param_provider, var.op.name, layers)
-        #print "caffe data shape", data.shape
-        #print "tf shape", var.get_shape()
+        # print "caffe data shape", data.shape
+        # print "tf shape", var.get_shape()
         assigns.append(var.assign(data))
     sess.run(assigns)
 
-    #for op in tf.get_default_graph().get_operations():
+    # for op in tf.get_default_graph().get_operations():
     #    print op.name
 
     i = [

@@ -31,7 +31,7 @@ activation = tf.nn.relu
 def inference(x, is_training,
               num_classes=1000,
               num_blocks=[3, 4, 6, 3],  # defaults to 50-layer network
-              use_bias=False, # defaults to using batch norm
+              use_bias=False,  # defaults to using batch norm
               bottleneck=True):
     c = Config()
     c['bottleneck'] = bottleneck
@@ -90,8 +90,8 @@ def inference(x, is_training,
 # See Section 4.2 in http://arxiv.org/abs/1512.03385
 def inference_small(x,
                     is_training,
-                    num_blocks=3, # 6n+2 total weight layers will be used.
-                    use_bias=False, # defaults to using batch norm
+                    num_blocks=3,  # 6n+2 total weight layers will be used.
+                    use_bias=False,  # defaults to using batch norm
                     num_classes=10):
     c = Config()
     c['is_training'] = tf.convert_to_tensor(is_training,
@@ -102,6 +102,7 @@ def inference_small(x,
     c['num_blocks'] = num_blocks
     c['num_classes'] = num_classes
     inference_small_config(x, c)
+
 
 def inference_small_config(x, c):
     c['bottleneck'] = False
@@ -145,10 +146,12 @@ def _imagenet_preprocess(rgb):
 
 
 def loss(logits, labels):
-    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(logits, labels)
+    cross_entropy = tf.nn.sparse_softmax_cross_entropy_with_logits(
+        logits, labels)
     cross_entropy_mean = tf.reduce_mean(cross_entropy)
- 
-    regularization_losses = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+
+    regularization_losses = tf.get_collection(
+        tf.GraphKeys.REGULARIZATION_LOSSES)
 
     loss_ = tf.add_n([cross_entropy_mean] + regularization_losses)
     tf.scalar_summary('loss', loss_)
@@ -168,8 +171,8 @@ def stack(x, c):
 def block(x, c):
     filters_in = x.get_shape()[-1]
 
-    # Note: filters_out isn't how many filters are outputed. 
-    # That is the case when bottleneck=False but when bottleneck is 
+    # Note: filters_out isn't how many filters are outputed.
+    # That is the case when bottleneck=False but when bottleneck is
     # True, filters_internal*4 filters are outputted. filters_internal is how many filters
     # the 3x3 convs output internally.
     m = 4 if c['bottleneck'] else 1
@@ -233,7 +236,6 @@ def bn(x, c):
                              initializer=tf.zeros_initializer)
         return x + bias
 
-
     axis = list(range(len(x_shape) - 1))
 
     beta = _get_variable('beta',
@@ -266,7 +268,7 @@ def bn(x, c):
         lambda: (moving_mean, moving_variance))
 
     x = tf.nn.batch_normalization(x, mean, variance, beta, gamma, BN_EPSILON)
-    #x.set_shape(inputs.get_shape()) ??
+    # x.set_shape(inputs.get_shape()) ??
 
     return x
 

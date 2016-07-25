@@ -4,7 +4,7 @@ import tensorflow as tf
 from tensorflow.python.ops import control_flow_ops
 from tensorflow.python.training import moving_averages
 
-from config import Config
+# from config import Config
 
 import datetime
 import numpy as np
@@ -33,7 +33,8 @@ def inference(x, is_training,
               num_blocks=[3, 4, 6, 3],  # defaults to 50-layer network
               use_bias=False,  # defaults to using batch norm
               bottleneck=True):
-    c = Config()
+    # c = Config()
+    c = {}
     c['bottleneck'] = bottleneck
     c['is_training'] = tf.convert_to_tensor(is_training,
                                             dtype='bool',
@@ -93,7 +94,8 @@ def inference_small(x,
                     num_blocks=3,  # 6n+2 total weight layers will be used.
                     use_bias=False,  # defaults to using batch norm
                     num_classes=10):
-    c = Config()
+    # c = Config()
+    c = {}
     c['is_training'] = tf.convert_to_tensor(is_training,
                                             dtype='bool',
                                             name='is_training')
